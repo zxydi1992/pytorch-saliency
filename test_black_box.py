@@ -22,7 +22,7 @@ def ev(_images, _labels):
     _, guesses = torch.max(black_box_fn(_images), 1)
     return torch.mean((guesses==_labels).float()).data[0]
 
-print 'Please wait, validating, it can take a few minutes...'
+print('Please wait, validating, it can take a few minutes...')
 scores = []
 i = 0
 for batch in dts.get_loader(val_dts, batch_size=batch_size):
@@ -30,4 +30,4 @@ for batch in dts.get_loader(val_dts, batch_size=batch_size):
     i += batch_size
     if i > num_validation_examples:
         break
-print 'Top 1 accuracy:', np.mean(scores)
+print('Top 1 accuracy:', np.mean(scores))

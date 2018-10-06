@@ -1,4 +1,4 @@
-from utils.pytorch_fixes import *
+from .utils.pytorch_fixes import *
 from torch.nn import functional as F
 import torch.nn as nn
 from torch.nn import Module
@@ -38,7 +38,7 @@ class SaliencyModel(Module):
         # start with the top scale
         down = self.encoder_scales
         modulator_sizes = []
-        for up in reversed(xrange(self.upsampler_scales)):
+        for up in reversed(range(self.upsampler_scales)):
             upsampler_chans = upsampler_base * 2**(up+1)
             encoder_chans = encoder_base * 2**down
             inc = upsampler_chans if down!=encoder_scales else encoder_chans
@@ -68,15 +68,15 @@ class SaliencyModel(Module):
 
         p = os.path.join(save_dir, 'model-%d.ckpt' % 1)
         if not os.path.exists(p):
-            print 'Could not find any checkpoint at %s, skipping restore' % p
+            print('Could not find any checkpoint at %s, skipping restore' % p)
             return
-        for name, data in torch.load(p, map_location=lambda storage, loc: storage).items():
+        for name, data in list(torch.load(p, map_location=lambda storage, loc: storage).items()):
             self._modules[name].load_state_dict(data)
 
     def minimalistic_save(self, save_dir):
         assert self.fix_encoder, 'You should not use this function if you are not using a pre-trained encoder like resnet'
         data = {}
-        for name, module in self._modules.items():
+        for name, module in list(self._modules.items()):
             if module is self.encoder:  # we do not want to restore the encoder as it should have its own restore function
                 continue
             data[name] = module.state_dict()
@@ -112,7 +112,7 @@ class SaliencyModel(Module):
         else:
             exists_logits = None
 
-        for up in reversed(xrange(self.upsampler_scales)):
+        for up in reversed(range(self.upsampler_scales)):
             assert down > 0
             main_flow = self._modules['up%d'%up](main_flow, out[down-1])
             down -= 1

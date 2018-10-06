@@ -30,7 +30,7 @@ SPEED_INFO = 'e/s: {examples_per_sec:.1f}'
 
 
 def smoothing_dict_update(main, update, smooth_coef):
-    for k, v in update.items():
+    for k, v in list(update.items()):
         if main.get(k) is None:
             main[k] = v
         else:
@@ -82,7 +82,7 @@ class NiceTrainer:
 
         self.printable_vars = list(printable_vars)
         self.events = list(events) if events else []
-        assert all(map(lambda x: isinstance(x, BaseEvent), self.events)), 'All events must be instances of the BaseEvent!'
+        assert all([isinstance(x, BaseEvent) for x in self.events]), 'All events must be instances of the BaseEvent!'
         self.computed_variables = computed_variables if computed_variables is not None else {}
 
         self.loss_name = loss_name
@@ -93,7 +93,7 @@ class NiceTrainer:
         if modules is not None:
             if not hasattr(modules, '__iter__'):
                 modules = [modules]
-        assert modules is None or all(map(lambda x: isinstance(x, torch.nn.Module), modules)), 'The list of modules can only contain instances of torch.nn.Module'
+        assert modules is None or all([isinstance(x, torch.nn.Module) for x in modules]), 'The list of modules can only contain instances of torch.nn.Module'
         self.modules = modules
         if set_trainable is None and self.modules is not None:
             def set_trainable(is_training):
@@ -115,7 +115,7 @@ class NiceTrainer:
         self._is_in_train_mode = None
         self.goodbye_after = goodbye_after
 
-        self._extra_var_info_string = (info_string if isinstance(info_string, basestring) else ' - '.join(info_string)) + (
+        self._extra_var_info_string = (info_string if isinstance(info_string, str) else ' - '.join(info_string)) + (
             (' - ' if self.printable_vars else '') + ' - '.join('%s: {%s:.4f}' % (e, e) for e in self.printable_vars))
 
 
@@ -142,8 +142,8 @@ class NiceTrainer:
     def _add_timed_save_event(self, period):
         @TimeEvent(period=period, first_at=period)
         def periodic_save(s):
-            print
-            print INFO_TEMPLATE % 'Performing a periodic save...'
+            print()
+            print(INFO_TEMPLATE % 'Performing a periodic save...')
             s.save()
         self.events.append(periodic_save)
 
@@ -155,7 +155,7 @@ class NiceTrainer:
                 s._lr_sheduler = StepLR(s.optimizer, period, gamma)
             s._lr_sheduler.step(epoch=s.info_vars['epochs_done'])
             for param_group in s.optimizer.param_groups:
-                print INFO_TEMPLATE % ('LR ' + str(param_group['lr']))
+                print(INFO_TEMPLATE % ('LR ' + str(param_group['lr'])))
         self.events.append(lr_step_event)
 
 
@@ -163,7 +163,7 @@ class NiceTrainer:
 
     def _main_loop(self, is_training, steps=None, allow_switch_mode=True):
         """Trains for 1 epoch if steps is None. Otherwise performs specified number of steps."""
-        if steps is  not None: print  WARN_TEMPLATE % 'Num steps is not fully supported yet! (fix it!)'  # todo allow continue and partial execution
+        if steps is  not None: print(WARN_TEMPLATE % 'Num steps is not fully supported yet! (fix it!)')  # todo allow continue and partial execution
         if not is_training:
             assert self.val_dts is not None, 'Validation dataset was not provided'
         if allow_switch_mode and self._is_in_train_mode != is_training:
@@ -172,7 +172,7 @@ class NiceTrainer:
                 self._is_in_train_mode = is_training
             else:
                 if is_training:
-                    print WARN_TEMPLATE % "could not set the modules to the training mode because neither set_trainable nor modules were provided, assuming already in the training mode"
+                    print(WARN_TEMPLATE % "could not set the modules to the training mode because neither set_trainable nor modules were provided, assuming already in the training mode")
                     self._is_in_train_mode = True
                 else:
                     raise ValueError("cannot set the modules to the eval mode because neither set_trainable nor modules were provided")
@@ -186,7 +186,7 @@ class NiceTrainer:
             comp_time=None,
             data_time=None,
         )
-        smoothing_dict.update(dict(zip(self.printable_vars, len(self.printable_vars)*[None])))
+        smoothing_dict.update(dict(list(zip(self.printable_vars, len(self.printable_vars)*[None]))))
 
 
         batches_per_epoch = len(dts)
@@ -262,7 +262,7 @@ class NiceTrainer:
             )
 
             # calculate computed variables and add them to the pt_store
-            for var_name, func in self.computed_variables.items():
+            for var_name, func in list(self.computed_variables.items()):
                 setattr(self.pt_store, var_name, func(self))
 
             # add ALL the printable variables to the smoother
@@ -321,20 +321,20 @@ class NiceTrainer:
 
     def train(self, steps=None):
         if steps is None:
-            print '_'*55
-            print 'Epoch', self.info_vars['epochs_done']+1
+            print('_'*55)
+            print('Epoch', self.info_vars['epochs_done']+1)
         self._main_loop(is_training=True, steps=steps, allow_switch_mode=True)
 
     def validate(self, allow_switch_mode=False):
         old_info = self.info_vars.copy()
-        print "Validation:"
+        print("Validation:")
         self._main_loop(is_training=False, steps=None, allow_switch_mode=allow_switch_mode)
         self.info_vars = old_info
 
 
     def _get_state(self):
         return dict(
-            info_vars={k:v for k, v in self.info_vars.items() if k in self._core_info_vars},
+            info_vars={k:v for k, v in list(self.info_vars.items()) if k in self._core_info_vars},
             state_dicts=[m.state_dict() for m in self.modules],
             optimizer_state=self.optimizer.state_dict(),
         )
@@ -531,14 +531,14 @@ def auto_norm(im, auto_normalize=True, auto_fix=True):
 def img_show_event(imgs_names, every_n_seconds=5, ith=0):
     @TimeEvent(period=every_n_seconds)
     def f(s):
-        if isinstance(imgs_names, basestring):
+        if isinstance(imgs_names, str):
             im = s.pt_store[imgs_names][ith]
         else:
             cands = tuple(auto_norm(s.pt_store[i][ith]) for i in imgs_names)
             im = np.concatenate(cands, 1)
-        print
+        print()
         pycat.show(im)
-        print
+        print()
     return f
 
 
@@ -598,7 +598,7 @@ def simple_img_classifier_train(model, dts, batch_size=512, epochs=25, lr=0.1, l
                      lr_step_period=lr_step,
                      val_dts=dts.get_loader(val_dts, batch_size))
 
-    for e in xrange(epochs):
+    for e in range(epochs):
         nt.train()
     nt.validate()
 

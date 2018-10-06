@@ -47,7 +47,7 @@ def test():
     for ims, labs in loader:
         i+=1
         if not i%20:
-            print "Images per second:", SAMP*BS/(time.time()-t)
+            print("Images per second:", SAMP*BS/(time.time()-t))
             pycat.show(ims[0].numpy())
             t = time.time()
         if i==100:

@@ -110,7 +110,7 @@ class AssertSize(Module):
 
 class ShapeLog(Module):
     def forward(self, x):
-        print x.size()
+        print(x.size())
         return x
 
 class PixelShuffleBlock(Module):
@@ -252,7 +252,7 @@ class MultiModulator(Module):
         ''' class selector must be of shape (BS,)  Returns (BS, MODULATOR_SIZE) for each modulator.'''
         em = torch.squeeze(self.emb(selectors.view(-1, 1)), 1)
         res = []
-        for i in xrange(self.num_modulators):
+        for i in range(self.num_modulators):
             res.append( self._modules['m%d'%i](em) )
         return tuple(res)
 
@@ -268,7 +268,7 @@ class EasyModule(Module):
     def restore(self, save_dir, step=1):
         p = os.path.join(save_dir, 'model-%d.ckpt' % step)
         if not os.path.exists(p):
-            print WARN_TEMPLATE % ('Could not find any checkpoint at %s, skipping restore' % p)
+            print(WARN_TEMPLATE % ('Could not find any checkpoint at %s, skipping restore' % p))
             return
         self.load_state_dict(torch.load(p))
 Module.save = EasyModule.save.__func__
@@ -513,7 +513,7 @@ class GanGroup(Module):
         opt = optimizer(self.parameters(), **optimizer_kwargs)
         @TrainStepEvent()
         def gan_group_train_evnt(s):
-            for _ in xrange(disc_steps):
+            for _ in range(disc_steps):
                 opt.zero_grad()
                 loss = self.discriminator_loss()
                 PT(disc_loss_=loss)

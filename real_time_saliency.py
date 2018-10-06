@@ -1,5 +1,5 @@
 import cv2
-from Queue import Queue
+from queue import Queue
 import time
 import numpy as np
 import threading
@@ -121,7 +121,7 @@ class RealTimeSaliency(wx.Frame):
     def show_items_that_contain(self, text=''):
         self.list_ctrl.DeleteAllItems()
         i = 0
-        for name in CLASS_ID_TO_NAME.values():
+        for name in list(CLASS_ID_TO_NAME.values()):
             if text.lower().strip() in name.lower():
                 self.list_ctrl.InsertItem(i, name)
                 i += 1
@@ -166,7 +166,7 @@ class ImgViewPanel(wx.Panel):
                 dialog.Destroy()
 
             except Exception:
-                print 'Could not open the dialog!'
+                print('Could not open the dialog!')
             self.dialog_init_function = False
         wx.CallLater(15, self.update)
 
@@ -262,7 +262,7 @@ class RT:
             imgs = np.concatenate(tuple(np.expand_dims(e[1], 0) for e in to_proc), 0)
             done_imgs = ((self.processor(imgs/(255./2) - 1.) + 1) * (255./2.)).astype(np.uint8)
 
-            for e in xrange(len(done_imgs)):
+            for e in range(len(done_imgs)):
                 im = done_imgs[e]
                 t = to_proc[e][0]
                 self.display_queue.put((t, im))
@@ -294,7 +294,7 @@ def get_proc_fn(cuda=False):
 
     def proc(ims):
         global LOGITS
-        print ims.shape
+        print(ims.shape)
         if FAST_MODE:
              sq = square_centrer_crop_resize_op(np.squeeze(ims, 0), (224, 224))
         else:
@@ -335,7 +335,7 @@ def square_centrer_crop_resize_op(im, size):
 from sal.datasets import imagenet_dataset
 def get_probs_np_img(probs, num=6):
     top_k, top_k_probs = np.argsort(probs)[::-1][:num], np.sort(probs)[::-1][:num]
-    print top_k, top_k_probs
+    print(top_k, top_k_probs)
     # top_k = [162, 463, 281, 178, 181, 596]
     # top_k_probs = [ 0.20559976,  0.10194654, 0.0338834,  0.03120151,  0.02777977,  0.02264762]
     objects = ['\n'.join(textwrap.wrap(imagenet_dataset.CLASS_ID_TO_NAME[e], 15)[:2]) for e in top_k]

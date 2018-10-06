@@ -42,7 +42,7 @@ def to_batch_variable(x, required_rank, cuda=False):
             return x.cpu()
         else:
             return x
-    if isinstance(x, (float, long, int)):
+    if isinstance(x, (float, int)):
         assert required_rank == 1
         return to_batch_variable(np.array([x]), required_rank, cuda)
     if isinstance(x, (list, tuple)):
@@ -79,18 +79,18 @@ def test(cuda=True):
     elefant_mask = f(ims, [386])  # 386 is an elefant (check sal/datasets/imagenet_synset.py for more)
 
 
-    print 'You should see a zebra'
+    print('You should see a zebra')
     pycat.show(apply_mask(ims, zebra_mask, boolean=False).cpu()[0].data.numpy()*128+128, auto_normalize=False)
-    print 'You should see an elefant'
+    print('You should see an elefant')
     pycat.show(apply_mask(ims, elefant_mask, boolean=False).cpu()[0].data.numpy()*128+128, auto_normalize=False)
 
-    print 'Testing speed with CUDA_ENABLED =', cuda
-    print 'Please wait...'
+    print('Testing speed with CUDA_ENABLED =', cuda)
+    print('Please wait...')
     t = time.time()
-    for e in xrange(20 if cuda else 2):
+    for e in range(20 if cuda else 2):
         f(np.random.randn(32, 3, 224, 224), np.random.uniform(0, 100, size=(32,)).astype(np.int), 6)
-    print 'Images per second:', 32. * (20 if cuda else 2) / (time.time()-t)
-    print 'You should expect ~200 images per second on a GPU (Titan XP) and 2.5 images per second on a CPU. '
+    print('Images per second:', 32. * (20 if cuda else 2) / (time.time()-t))
+    print('You should expect ~200 images per second on a GPU (Titan XP) and 2.5 images per second on a CPU. ')
 
 
 if __name__ == '__main__':

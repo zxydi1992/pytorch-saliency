@@ -1,6 +1,6 @@
 from .datasets import cifar_dataset
-from utils.pytorch_fixes import *
-from utils.pytorch_trainer import *
+from .utils.pytorch_fixes import *
+from .utils.pytorch_trainer import *
 import torch
 from torch.autograd import Variable
 from torch.nn import functional as F

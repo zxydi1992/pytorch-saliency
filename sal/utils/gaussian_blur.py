@@ -7,7 +7,7 @@ from torch.autograd import Variable
 
 def _gaussian_kernels(kernel_size, sigma, chans):
     assert kernel_size % 2, 'Kernel size of the gaussian blur must be odd!'
-    x = np.expand_dims(np.array(range(-kernel_size/2, -kernel_size/2+kernel_size, 1)), 0)
+    x = np.expand_dims(np.array(list(range(-kernel_size/2, -kernel_size/2+kernel_size, 1))), 0)
     vals = np.exp(-np.square(x)/(2.*sigma**2))
     _kernel = np.reshape(vals / np.sum(vals), (1, 1, kernel_size, 1))
     kernel =  np.zeros((chans, 1, kernel_size, 1), dtype=np.float32) + _kernel
@@ -32,11 +32,11 @@ def test():
     import os, pycat
     im = Variable(torch.Tensor(np.expand_dims(np.transpose(np.array(Image.open(os.path.join(os.path.dirname(__file__), 'test.jpg'))), (2, 0, 1)), 0)/255.), requires_grad=True)
     g = gaussian_blur(im)
-    print 'Original'
+    print('Original')
     pycat.show(im[0].data.numpy())
-    print 'Blurred version'
+    print('Blurred version')
     pycat.show(g[0].data.numpy())
-    print 'Image gradient over blurred sum (should be white in the middle + turning darker at the edges)'
+    print('Image gradient over blurred sum (should be white in the middle + turning darker at the edges)')
     l = torch.sum(g)
     l.backward()
     gr = im.grad[0].data.numpy()

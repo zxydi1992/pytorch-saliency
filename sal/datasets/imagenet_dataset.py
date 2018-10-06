@@ -57,8 +57,8 @@ def test():
     for ims, labs in loader:
         i+=1
         if not i%20:
-            print 'min', torch.min(ims),'max', torch.max(ims), 'var', torch.var(ims), 'mean', torch.mean(ims)
-            print "Images per second:", SAMP*BS/(time.time()-t)
+            print('min', torch.min(ims),'max', torch.max(ims), 'var', torch.var(ims), 'mean', torch.mean(ims))
+            print("Images per second:", SAMP*BS/(time.time()-t))
             pycat.show(ims[0].numpy())
             t = time.time()
         if i==100:
@@ -66,13 +66,13 @@ def test():
 
 
 
-from imagenet_synset import synset
+from .imagenet_synset import synset
 SYNSET_TO_NAME= dict((e[:9], e[10:]) for e in synset.splitlines())
 SYNSET_TO_CLASS_ID = dict((e[:9], i) for i, e in enumerate(synset.splitlines()))
 
-CLASS_ID_TO_SYNSET = {v:k for k,v in SYNSET_TO_CLASS_ID.items()}
+CLASS_ID_TO_SYNSET = {v:k for k,v in list(SYNSET_TO_CLASS_ID.items())}
 CLASS_ID_TO_NAME = {i:SYNSET_TO_NAME[CLASS_ID_TO_SYNSET[i]] for i in CLASS_ID_TO_SYNSET}
-CLASS_NAME_TO_ID = {v:k for k, v in CLASS_ID_TO_NAME.items()}
+CLASS_NAME_TO_ID = {v:k for k, v in list(CLASS_ID_TO_NAME.items())}
 
 
 

@@ -1,6 +1,6 @@
 import torch
 from torch.autograd import Variable
-import gaussian_blur
+from . import gaussian_blur
 
 def calc_smoothness_loss(mask, power=2, border_penalty=0.3):
     ''' For a given image this loss should be more or less invariant to image resize when using power=2...
@@ -75,17 +75,17 @@ def test():
     import numpy as np
     import os, pycat
     im = Variable(torch.Tensor(np.expand_dims(np.transpose(np.array(Image.open(os.path.join(os.path.dirname(__file__), 'test.jpg'))), (2, 0, 1)), 0)/255.*2-1.), requires_grad=False)
-    print 'Original'
+    print('Original')
     pycat.show(im[0].data.numpy())
-    print
+    print()
     for pres in [1., 0.5, 0.1]:
-        print 'Mask strength =', pres
-        for e in xrange(5):
+        print('Mask strength =', pres)
+        for e in range(5):
             m = Variable(torch.Tensor(1, 3, im.size(2), im.size(3)).fill_(pres), requires_grad=True)
             res = apply_mask(im, m)
             pycat.show(res[0].data.numpy())
     s = torch.sum(res)
     s.backward()
-    print torch.sum(m.grad)
+    print(torch.sum(m.grad))
 
 

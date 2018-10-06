@@ -32,8 +32,8 @@ optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weig
 @TrainStepEvent()
 @EveryNthEvent(4000)
 def lr_step_phase1(s):
-    print
-    print GREEN_STR % 'Reducing lr by a factor of 10'
+    print()
+    print(GREEN_STR % 'Reducing lr by a factor of 10')
     for param_group in optim_phase1.param_groups:
         param_group['lr'] = param_group['lr'] / 10.
 
@@ -67,8 +67,8 @@ def phase2_visualise(s):
     mask = auto_norm(pt['masks'][0]*255, auto_normalize=False)
     preserved = auto_norm(pt['preserved'][0])
     destroyed = auto_norm(pt['destroyed'][0])
-    print
-    print 'Target (%s) = %s' % (GREEN_STR%'REAL' if pt['is_real_label'][0] else RED_STR%'FAKE!' , dts.CLASS_ID_TO_NAME[pt['targets'][0]])
+    print()
+    print('Target (%s) = %s' % (GREEN_STR%'REAL' if pt['is_real_label'][0] else RED_STR%'FAKE!' , dts.CLASS_ID_TO_NAME[pt['targets'][0]]))
     final = np.concatenate((orig, mask, preserved, destroyed), axis=1)
     pycat.show(final)
 
@@ -83,7 +83,7 @@ nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=128), op
 FAKE_PROB = .5
 nt_phase1.train(8500)
 
-print GREEN_STR % 'Finished phase 1 of training, waiting until the dataloading workers shut down...'
+print(GREEN_STR % 'Finished phase 1 of training, waiting until the dataloading workers shut down...')
 
 nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), optim_phase2,
                  val_dts=dts.get_loader(val_dts, batch_size=64),

@@ -8,7 +8,7 @@ class PTStore:
 
     def __call__(self, **kwargs):
         assert len(kwargs)==1, "You must specify just 1 variable to add"
-        key, value = kwargs.items()[0]
+        key, value = list(kwargs.items())[0]
         setattr(self, key, value)
         return value
 
@@ -37,14 +37,14 @@ def to_numpy(cand):
     elif isinstance(cand, torch._TensorBase):
         return cand.cpu().numpy()
     elif isinstance(cand, (list, tuple)):
-        return map(to_numpy, cand)
+        return list(map(to_numpy, cand))
     elif isinstance(cand, np.ndarray):
         return cand
     else:
         return np.array([cand])
 
 def to_number(x):
-    if isinstance(x, (int, long, float)):
+    if isinstance(x, (int, float)):
         return float(x)
     if isinstance(x, np.ndarray):
         return x[0]
