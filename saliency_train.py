@@ -1,3 +1,4 @@
+import argparse
 import torch
 from sal.utils.pytorch_fixes import *
 from sal.utils.pytorch_trainer import *
@@ -95,26 +96,38 @@ def ev_phase2(_images, _labels):
     loss = PT(loss=saliency_loss)
 
 
-nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=72), optim_phase1,
-                 val_dts=dts.get_loader(val_dts, batch_size=72),
-                 modules=[saliency],
-                 printable_vars=['loss', 'exists_accuracy'],
-                 events=[lr_step_phase1,],
-                 computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
-FAKE_PROB = .5
-nt_phase1.train(85)
-del nt_phase1
-saliency.cpu()
+FAKE_PROB = -1
 
-print(GREEN_STR % 'Finished phase 1 of training, waiting until the dataloading workers shut down...')
 
-saliency.cuda()
-nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), optim_phase2,
-                 val_dts=dts.get_loader(val_dts, batch_size=64),
-                 modules=[saliency],
-                 printable_vars=['loss', 'exists_accuracy'],
-                 events=[],
-                 computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
-FAKE_PROB = .3
-nt_phase2.train(30)
-saliency.minimalistic_save('densenet169rtsmodel')  # later to restore just use saliency.minimalistic_restore methdod.
+def main():
+    global FAKE_PROB
+    parser = argparse.ArgumentParser()
+    parser.add_argument('phase', choices=[1, 2])
+    parser.add_argument('save_dir')
+    parser.add_argument('--load-model', dest='load_model')
+    config = parser.parse_args()
+
+    if config.load_model is not None:
+        saliency.minimialistic_restore(config.load_model)
+
+    if config == 1:
+        nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=72), optim_phase1,
+                         val_dts=dts.get_loader(val_dts, batch_size=72),
+                         modules=[saliency],
+                         printable_vars=['loss', 'exists_accuracy'],
+                         events=[lr_step_phase1,],
+                         computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
+        FAKE_PROB = .5
+        nt_phase1.train(85)
+    else:
+        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), optim_phase2,
+                         val_dts=dts.get_loader(val_dts, batch_size=64),
+                         modules=[saliency],
+                         printable_vars=['loss', 'exists_accuracy'],
+                         events=[],
+                         computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
+        FAKE_PROB = .3
+        nt_phase2.train(30)
+
+    saliency.cpu()
+    saliency.minimalistic_save('densenet169rtsmodel')  # later to restore just use saliency.minimalistic_restore methdod.
