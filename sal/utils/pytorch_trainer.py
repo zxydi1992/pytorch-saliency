@@ -242,6 +242,7 @@ class NiceTrainer:
             if is_training:
                 loss.backward()
                 self.optimizer.step()
+            del loss
             # ----------------------------------------------------------------------------------
             torch.cuda.synchronize()
             t_end = time.time()
