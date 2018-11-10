@@ -19,7 +19,7 @@ import torch.optim as torch_optim
 from torch.autograd import Variable
 import signal
 import sys
-from random import random
+from numpy import random
 
 INFO_TEMPLATE = '\033[38;5;2mINFO: %s\033[0m\n'
 WARN_TEMPLATE = '\033[38;5;1mWARNING: %s\033[0m\n'
