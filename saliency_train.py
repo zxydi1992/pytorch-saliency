@@ -118,7 +118,7 @@ if __name__ == '__main__':
                          events=[lr_step_phase1,],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
         FAKE_PROB = .5
-        nt_phase1.train(85)
+        nt_phase1.train(8500)
     else:
         nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), optim_phase2,
                          val_dts=dts.get_loader(val_dts, batch_size=64),
@@ -127,7 +127,7 @@ if __name__ == '__main__':
                          events=[],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
         FAKE_PROB = .3
-        nt_phase2.train(30)
+        nt_phase2.train(3000)
 
     saliency.cpu()
     saliency.minimalistic_save(config.save_dir)  # later to restore just use saliency.minimalistic_restore methdod.
