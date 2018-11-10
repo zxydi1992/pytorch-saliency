@@ -38,7 +38,8 @@ def black_box_densenet169(cuda=True):
 
     black_box_model.train(False)
     if cuda:
-        black_box_model = torch.nn.DataParallel(black_box_model).cuda()
+        black_box_model = torch.nn.DataParallel(black_box_model)
+        # black_box_model = torch.nn.DataParallel(black_box_model).cuda()
 
     def black_box_fn(_images):
         print(torch.min(_images[0]), torch.max(_images[0]))
