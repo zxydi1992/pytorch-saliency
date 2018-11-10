@@ -49,6 +49,8 @@ def black_box_densenet169(cuda=True):
     freeze_model(black_box_model)
 
     def black_box_fn(_images):
+        with torch.no_grad():
+            print(torch.min(_images[0]), torch.max(_images[0]))
         return black_box_model(imagenet_normalize(0.5 * (_images + 1)))
     return black_box_fn
 
@@ -121,8 +123,8 @@ if __name__ == '__main__':
         FAKE_PROB = .5
         nt_phase1.train(8500)
     else:
-        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), optim_phase2,
-                         val_dts=dts.get_loader(val_dts, batch_size=64),
+        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=48), optim_phase2,
+                         val_dts=dts.get_loader(val_dts, batch_size=48),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[],
