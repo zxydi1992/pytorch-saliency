@@ -13,9 +13,37 @@ from torchvision.models.densenet import densenet169
 # The training code does not need to be changed and the default values should work well for high resolution ~300x300 real-world images.
 # By default we train on 224x224 resolution ImageNet images with a resnet50 black box classifier.
 dts = imagenet_dataset
-black_box_fn = get_black_box_fn(model_zoo_model=densenet169)
+# black_box_fn = get_black_box_fn(model_zoo_model=densenet169)
 # ----------------
 
+
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
+
+
+def imagenet_normalize(t, mean=None, std=None):
+    if mean is None:
+        mean = IMAGENET_MEAN
+    if std is None:
+        std= IMAGENET_STD
+
+    ts = []
+    for i in range(3):
+        ts.append(torch.unsqueeze((t[:, i] - mean[i]) / std[i], 1))
+    return torch.cat(ts, dim=1)
+
+
+def black_box_densenet169(cuda=True):
+    black_box_model = densenet169(pretrained=True)
+
+    black_box_model.train(False)
+    if cuda:
+        black_box_model = torch.nn.DataParallel(black_box_model).cuda()
+
+    def black_box_fn(_images):
+        print(torch.min(_images[0]), torch.max(_images[0]))
+        return black_box_model(imagenet_normalize(_images * 0.5 + 1))
+    return black_box_fn
 
 
 train_dts = dts.get_train_dataset()
@@ -25,7 +53,7 @@ val_dts = dts.get_val_dataset()
 saliency = SaliencyModel(resnet50encoder(pretrained=True), 5, 64, 3, 64, fix_encoder=True, use_simple_activation=False, allow_selector=True)
 
 saliency_p = nn.DataParallel(saliency).cuda()
-saliency_loss_calc = SaliencyLoss(black_box_fn, smoothness_loss_coef=0.005) # model based saliency requires very small smoothness loss and therefore can produce very sharp masks
+saliency_loss_calc = SaliencyLoss(black_box_densenet169, smoothness_loss_coef=0.005) # model based saliency requires very small smoothness loss and therefore can produce very sharp masks
 optim_phase1 = torch_optim.Adam(saliency.selector_module.parameters(), 0.001, weight_decay=0.0001)
 optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weight_decay=0.0001)
 
