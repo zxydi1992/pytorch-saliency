@@ -44,8 +44,8 @@ def black_box_densenet169(cuda=True):
 
     black_box_model.train(False)
     if cuda:
-        black_box_model = black_box_model.cuda()
-        # black_box_model = torch.nn.DataParallel(black_box_model).cuda()
+        # black_box_model = black_box_model.cuda()
+        black_box_model = torch.nn.DataParallel(black_box_model).cuda()
     freeze_model(black_box_model)
 
     def black_box_fn(_images):
@@ -109,6 +109,8 @@ if __name__ == '__main__':
 
     if config.load_model is not None:
         saliency.minimialistic_restore(config.load_model)
+    saliency_old = saliency
+    saliency = nn.DataParallel(saliency)
 
     if config.phase == 1:
         nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=72), optim_phase1,
@@ -129,5 +131,5 @@ if __name__ == '__main__':
         FAKE_PROB = .3
         nt_phase2.train(3000)
 
-    saliency.cpu()
-    saliency.minimalistic_save(config.save_dir)  # later to restore just use saliency.minimalistic_restore methdod.
+    saliency_old.cpu()
+    saliency_old.minimalistic_save(config.save_dir)  # later to restore just use saliency.minimalistic_restore methdod.
