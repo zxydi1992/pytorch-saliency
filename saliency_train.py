@@ -33,6 +33,11 @@ def imagenet_normalize(t, mean=None, std=None):
     return torch.cat(ts, dim=1)
 
 
+def freeze_model(model):
+    for param in model.parameters():
+        param.requires_grad_(False)
+
+
 def black_box_densenet169(cuda=True):
     black_box_model = densenet169(pretrained=True)
 
@@ -40,6 +45,7 @@ def black_box_densenet169(cuda=True):
     if cuda:
         black_box_model = black_box_model.cuda()
         # black_box_model = torch.nn.DataParallel(black_box_model).cuda()
+    freeze_model(black_box_model)
 
     def black_box_fn(_images):
         print(torch.min(_images[0]), torch.max(_images[0]))
