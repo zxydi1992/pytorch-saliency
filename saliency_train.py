@@ -130,4 +130,4 @@ if __name__ == '__main__':
         nt_phase2.train(30)
 
     saliency.cpu()
-    saliency.minimalistic_save('densenet169rtsmodel')  # later to restore just use saliency.minimalistic_restore methdod.
+    saliency.minimalistic_save(config.save_dir)  # later to restore just use saliency.minimalistic_restore methdod.
