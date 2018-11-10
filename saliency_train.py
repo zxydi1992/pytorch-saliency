@@ -114,8 +114,8 @@ if __name__ == '__main__':
     saliency = nn.DataParallel(saliency)
 
     if config.phase == 1:
-        nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=72), optim_phase1,
-                         val_dts=dts.get_loader(val_dts, batch_size=72),
+        nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=128), optim_phase1,
+                         val_dts=dts.get_loader(val_dts, batch_size=128),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[lr_step_phase1,],
@@ -123,8 +123,8 @@ if __name__ == '__main__':
         FAKE_PROB = .5
         nt_phase1.train(8500)
     else:
-        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=48), optim_phase2,
-                         val_dts=dts.get_loader(val_dts, batch_size=48),
+        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), optim_phase2,
+                         val_dts=dts.get_loader(val_dts, batch_size=64),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[],
