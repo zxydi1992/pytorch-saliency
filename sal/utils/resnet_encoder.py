@@ -5,10 +5,25 @@ from torchvision.models.resnet import ResNet, Bottleneck
 from .pytorch_fixes import adapt_to_image_domain
 
 
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
+
+
+def imagenet_normalize(t, mean=None, std=None):
+    if mean is None:
+        mean = IMAGENET_MEAN
+    if std is None:
+        std= IMAGENET_STD
+
+    ts = []
+    for i in range(3):
+        ts.append(torch.unsqueeze((t[:, i] - mean[i]) / std[i], 1))
+    return torch.cat(ts, dim=1)
+
 
 class ResNetEncoder(ResNet):
     def forward(self, x):
-        s0 = x
+        s0 = imagenet_normalize(x + 1)
         x = self.conv1(s0)
         x = self.bn1(x)
         s1 = self.relu(x)
