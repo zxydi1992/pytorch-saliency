@@ -7,8 +7,8 @@ import os
 
 # Images must be segregated in folders by class! So both train and val folders should contain 1000 folders, one for each class.
 # PLEASE EDIT THESE 2 LINES:
-IMAGE_NET_TRAIN_PATH = '/home/piter/ImageNetFull/train/'
-IMAGE_NET_VAL_PATH = '/home/piter/ImageNetFull/val/'
+IMAGE_NET_TRAIN_PATH = '/home/xinyang/Datasets/imagenet_1000'
+IMAGE_NET_VAL_PATH = '/home/xinyang/Datasets/imagenet_val'
 
 
 #-----------------------------------------------------
