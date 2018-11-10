@@ -110,7 +110,7 @@ if __name__ == '__main__':
     if config.load_model is not None:
         saliency.minimialistic_restore(config.load_model)
 
-    if config == 1:
+    if config.phase == 1:
         nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=72), optim_phase1,
                          val_dts=dts.get_loader(val_dts, batch_size=72),
                          modules=[saliency],
