@@ -6,6 +6,7 @@ from sal.utils.mask import *
 from torchvision.models.resnet import resnet50
 import os
 
+
 def get_black_box_fn(model_zoo_model=resnet50, cuda=True, image_domain=(-2., 2.)):
     ''' You can try any model from the pytorch model zoo (torchvision.models)
         eg. VGG, inception, mobilenet, alexnet...

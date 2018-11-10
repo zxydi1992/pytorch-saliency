@@ -23,7 +23,7 @@ def imagenet_normalize(t, mean=None, std=None):
 
 class ResNetEncoder(ResNet):
     def forward(self, x):
-        s0 = imagenet_normalize(x + 1)
+        s0 = imagenet_normalize(0.5 * (x + 1))
         x = self.conv1(s0)
         x = self.bn1(x)
         s1 = self.relu(x)
