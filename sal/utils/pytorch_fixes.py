@@ -7,6 +7,7 @@ __all__ = ['RandomSizedCrop2', 'STD_NORMALIZE', 'ShapeLog', 'AssertSize', 'Globa
            ]
 
 
+import math
 import torch
 from PIL import Image
 from torchvision.transforms import *
