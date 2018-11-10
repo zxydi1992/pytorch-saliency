@@ -101,7 +101,7 @@ FAKE_PROB = -1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('phase', choices=[1, 2])
+    parser.add_argument('phase', choices=[1, 2], type=int)
     parser.add_argument('save_dir')
     parser.add_argument('--load-model', dest='load_model')
     config = parser.parse_args()
