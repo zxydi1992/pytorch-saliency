@@ -88,8 +88,8 @@ def ev_phase2(_images, _labels):
     loss = PT(loss=saliency_loss)
 
 
-nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=128), optim_phase1,
-                 val_dts=dts.get_loader(val_dts, batch_size=128),
+nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=96), optim_phase1,
+                 val_dts=dts.get_loader(val_dts, batch_size=96),
                  modules=[saliency],
                  printable_vars=['loss', 'exists_accuracy'],
                  events=[lr_step_phase1,],
