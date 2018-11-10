@@ -60,7 +60,7 @@ val_dts = dts.get_val_dataset()
 saliency = SaliencyModel(resnet50encoder(pretrained=True), 5, 64, 3, 64, fix_encoder=True, use_simple_activation=False, allow_selector=True)
 
 saliency_p = saliency.cuda()
-saliency_loss_calc = SaliencyLoss(black_box_densenet169, smoothness_loss_coef=0.005) # model based saliency requires very small smoothness loss and therefore can produce very sharp masks
+saliency_loss_calc = SaliencyLoss(black_box_densenet169(), smoothness_loss_coef=0.005) # model based saliency requires very small smoothness loss and therefore can produce very sharp masks
 optim_phase1 = torch_optim.Adam(saliency.selector_module.parameters(), 0.001, weight_decay=0.0001)
 optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weight_decay=0.0001)
 
@@ -102,7 +102,9 @@ nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=96), opt
                  events=[lr_step_phase1,],
                  computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
 FAKE_PROB = .5
-nt_phase1.train(8500)
+nt_phase1.train(85)
+del nt_phase1
+saliency.cpu()
 
 print(GREEN_STR % 'Finished phase 1 of training, waiting until the dataloading workers shut down...')
 
@@ -113,5 +115,5 @@ nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), opt
                  events=[],
                  computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
 FAKE_PROB = .3
-nt_phase2.train(3000)
+nt_phase2.train(30)
 saliency.minimalistic_save('densenet169rtsmodel')  # later to restore just use saliency.minimalistic_restore methdod.
