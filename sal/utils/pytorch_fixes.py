@@ -271,8 +271,8 @@ class EasyModule(Module):
             print(WARN_TEMPLATE % ('Could not find any checkpoint at %s, skipping restore' % p))
             return
         self.load_state_dict(torch.load(p))
-Module.save = EasyModule.save.__func__
-Module.restore = EasyModule.restore.__func__
+Module.save = EasyModule.save
+Module.restore = EasyModule.restore
 
 def one_hot(labels, depth):
     if labels.is_cuda:
