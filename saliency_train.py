@@ -99,13 +99,13 @@ def ev_phase2(_images, _labels):
 FAKE_PROB = -1
 
 
-def main():
-    global FAKE_PROB
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('phase', choices=[1, 2])
     parser.add_argument('save_dir')
     parser.add_argument('--load-model', dest='load_model')
     config = parser.parse_args()
+    print('config', config)
 
     if config.load_model is not None:
         saliency.minimialistic_restore(config.load_model)
