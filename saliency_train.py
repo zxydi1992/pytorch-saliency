@@ -5,7 +5,6 @@ from sal.saliency_model import SaliencyModel, SaliencyLoss, get_black_box_fn
 from sal.datasets import imagenet_dataset
 from sal.utils.resnet_encoder import resnet50encoder
 from torchvision.models.resnet import resnet50
-import pycat
 
 
 # ---- config ----
@@ -60,20 +59,6 @@ def ev_phase2(_images, _labels):
     loss = PT(loss=saliency_loss)
 
 
-@TimeEvent(period=5)
-def phase2_visualise(s):
-    pt = s.pt_store
-    orig = auto_norm(pt['images'][0])
-    mask = auto_norm(pt['masks'][0]*255, auto_normalize=False)
-    preserved = auto_norm(pt['preserved'][0])
-    destroyed = auto_norm(pt['destroyed'][0])
-    print()
-    print('Target (%s) = %s' % (GREEN_STR%'REAL' if pt['is_real_label'][0] else RED_STR%'FAKE!' , dts.CLASS_ID_TO_NAME[pt['targets'][0]]))
-    final = np.concatenate((orig, mask, preserved, destroyed), axis=1)
-    pycat.show(final)
-
-
-
 nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=128), optim_phase1,
                  val_dts=dts.get_loader(val_dts, batch_size=128),
                  modules=[saliency],
@@ -89,7 +74,7 @@ nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), opt
                  val_dts=dts.get_loader(val_dts, batch_size=64),
                  modules=[saliency],
                  printable_vars=['loss', 'exists_accuracy'],
-                 events=[phase2_visualise,],
+                 events=[],
                  computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
 FAKE_PROB = .3
 nt_phase2.train(3000)
