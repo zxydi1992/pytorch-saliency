@@ -5,6 +5,7 @@ from sal.saliency_model import SaliencyModel, SaliencyLoss, get_black_box_fn
 from sal.datasets import imagenet_dataset
 from sal.utils.resnet_encoder import resnet50encoder
 from torchvision.models.resnet import resnet50
+from torchvision.models.densenet import densenet169
 
 
 # ---- config ----
@@ -12,7 +13,7 @@ from torchvision.models.resnet import resnet50
 # The training code does not need to be changed and the default values should work well for high resolution ~300x300 real-world images.
 # By default we train on 224x224 resolution ImageNet images with a resnet50 black box classifier.
 dts = imagenet_dataset
-black_box_fn = get_black_box_fn(model_zoo_model=resnet50)
+black_box_fn = get_black_box_fn(model_zoo_model=densenet169)
 # ----------------
 
 
@@ -78,4 +79,4 @@ nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), opt
                  computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
 FAKE_PROB = .3
 nt_phase2.train(3000)
-saliency.minimalistic_save('yoursaliencymodel')  # later to restore just use saliency.minimalistic_restore methdod.
+saliency.minimalistic_save('densenet169rtsmodel')  # later to restore just use saliency.minimalistic_restore methdod.
