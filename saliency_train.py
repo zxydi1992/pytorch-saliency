@@ -49,7 +49,6 @@ def black_box_densenet169(cuda=True):
     freeze_model(black_box_model)
 
     def black_box_fn(_images):
-        print(torch.min(_images[0]), torch.max(_images[0]))
         return black_box_model(imagenet_normalize(0.5 * (_images + 1)))
     return black_box_fn
 
