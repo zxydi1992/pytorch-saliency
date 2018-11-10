@@ -7,7 +7,7 @@ from torch.autograd import Variable
 
 def _gaussian_kernels(kernel_size, sigma, chans):
     assert kernel_size % 2, 'Kernel size of the gaussian blur must be odd!'
-    x = np.expand_dims(np.array(list(range(-kernel_size/2, -kernel_size/2+kernel_size, 1))), 0)
+    x = np.expand_dims(np.array(list(range(-kernel_size // 2, -kernel_size // 2 + kernel_size, 1))), 0)
     vals = np.exp(-np.square(x)/(2.*sigma**2))
     _kernel = np.reshape(vals / np.sum(vals), (1, 1, kernel_size, 1))
     kernel =  np.zeros((chans, 1, kernel_size, 1), dtype=np.float32) + _kernel
@@ -23,8 +23,8 @@ def gaussian_blur(_images, kernel_size=55, sigma=11):
     if _images.is_cuda:
         kernel_a = kernel_a.cuda()
         kernel_b = kernel_b.cuda()
-    _rows = conv2d(_images, Variable(kernel_a, requires_grad=False), groups=_images.size(1), padding=(kernel_size / 2, 0))
-    return conv2d(_rows, Variable(kernel_b, requires_grad=False), groups=_images.size(1), padding=(0, kernel_size / 2))
+    _rows = conv2d(_images, Variable(kernel_a, requires_grad=False), groups=_images.size(1), padding=(kernel_size // 2, 0))
+    return conv2d(_rows, Variable(kernel_b, requires_grad=False), groups=_images.size(1), padding=(0, kernel_size // 2))
 
 
 def test():

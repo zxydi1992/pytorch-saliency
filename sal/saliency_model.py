@@ -46,8 +46,8 @@ class SaliencyModel(Module):
             self.add_module('up%d'%up,
                             UNetUpsampler(
                                 in_channels=inc,
-                                passthrough_channels=encoder_chans/2,
-                                out_channels=upsampler_chans/2,
+                                passthrough_channels=encoder_chans // 2,
+                                out_channels=upsampler_chans // 2,
                                 follow_up_residual_blocks=1,
                                 activation_fn=lambda: nn.ReLU(),
                             ))
