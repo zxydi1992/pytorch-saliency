@@ -43,10 +43,12 @@ def to_numpy(cand):
     else:
         return np.array([cand])
 
+
 def to_number(x):
     if isinstance(x, (int, float)):
         return float(x)
     if isinstance(x, np.ndarray):
-        return x[0]
+        assert x.size == 1
+        return np.asscalar(x)
     return x.data[0]
 
