@@ -20,7 +20,7 @@ class ResNetEncoder(ResNet):
 
         x = self.avgpool(s5)
         sX = x.view(x.size(0), -1)
-        sC = self.last_layer(sX)
+        sC = self.last_linear(sX)
 
         return s0, s1, s2, s3, s4, s5, sX, sC
 
