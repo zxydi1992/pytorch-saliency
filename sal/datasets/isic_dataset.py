@@ -96,4 +96,4 @@ class ISICDataset(Dataset):
         if self.transforms is not None:
             image = self.transforms(image)
         label = self.labels[index]
-        return image, label, path
+        return image, label
