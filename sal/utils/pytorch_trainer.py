@@ -38,6 +38,14 @@ def smoothing_dict_update(main, update, smooth_coef):
     return main
 
 
+def sample_from_loader(loader, count):
+    remains = count
+    while remains > 0:
+        for batch in loader:
+            yield batch
+        remains -= 1
+
+
 class NiceTrainer:
     def __init__(self,
                  forward_step,  # forward step takes the output of the transform_inputs
@@ -178,7 +186,7 @@ class NiceTrainer:
                     raise ValueError("cannot set the modules to the eval mode because neither set_trainable nor modules were provided")
 
         dts = self.train_dts if is_training else self.val_dts
-        dts_iter = iter(dts)
+        # dts_iter = iter(dts)
         smooth_burn_in = 0.8 * self.smooth_coef
         smooth_normal = self.smooth_coef
 
@@ -223,7 +231,7 @@ class NiceTrainer:
         smoothed_printable_vars = {}
 
         t_fetch = time.time()
-        for batch in dts_iter:
+        for batch in sample_from_loader(dts, steps):
             last_hearbeat[0] = time.time()
 
             self.pt_store.clear()
@@ -305,12 +313,12 @@ class NiceTrainer:
                 self.info_vars['epochs_done'] += 1
 
         if steps is not None:  # really annoying that pytorch does not handle this on its own... todo improve this!
-            dts_iter._shutdown_workers()
+            # dts_iter._shutdown_workers()
             time.sleep(11)
-            for e in dts_iter.workers:
-                e.terminate()
+            # for e in dts_iter.workers:
+            #    e.terminate()
             time.sleep(2)
-            del dts_iter
+            # del dts_iter
 
 
         # we have left the dangerous loop, quit the guarding process...
