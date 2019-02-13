@@ -61,7 +61,7 @@ val_dts = dts.get_val_dataset()
 # Default saliency model with pretrained resnet50 feature extractor, produces saliency maps which have resolution 4 times lower than the input image.
 saliency = SaliencyModel(resnet50encoder(pretrained=True), 5, 64, 3, 64, fix_encoder=True, use_simple_activation=False, allow_selector=True)
 
-saliency_p = saliency.cuda()
+saliency_p = nn.DataParallel(saliency).cuda()
 saliency_loss_calc = SaliencyLoss(black_box_densenet169(), smoothness_loss_coef=0.005) # model based saliency requires very small smoothness loss and therefore can produce very sharp masks
 optim_phase1 = torch_optim.Adam(saliency.selector_module.parameters(), 0.001, weight_decay=0.0001)
 optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weight_decay=0.0001)
