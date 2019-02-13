@@ -46,6 +46,9 @@ val_dts = dts.get_val_dataset()
 
 encoder = resnet50encoder(7)
 encoder.load_state_dict(torch.load(ISIC_RESNET50_CKPT_PATH)['state_dict'])
+for param in encoder.parameters():
+    param.requires_grad = False
+
 # Default saliency model with pretrained resnet50 feature extractor, produces saliency maps which have resolution 4 times lower than the input image.
 saliency = SaliencyModel(encoder, 5, 64, 3, 64, fix_encoder=True, use_simple_activation=False, allow_selector=True, num_classes=7)
 
