@@ -70,7 +70,7 @@ def lr_step_phase1(s):
 @ev_batch_to_images_labels
 def ev_phase1(_images, _labels):
     __fakes = Variable(torch.Tensor(_images.size(0)).uniform_(0, 1).cuda()<FAKE_PROB)
-    _targets = (_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 999).cuda()).long()*__fakes.long())%1000
+    _targets = (_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 6).cuda()).long()*__fakes.long()) % 7
     _is_real_label = PT(is_real_label=(_targets == _labels).long())
     _masks, _exists_logits, _ = saliency_p(_images, _targets)
     PT(exists_logits=_exists_logits)
@@ -81,7 +81,8 @@ def ev_phase1(_images, _labels):
 @ev_batch_to_images_labels
 def ev_phase2(_images, _labels):
     __fakes = Variable(torch.Tensor(_images.size(0)).uniform_(0, 1).cuda()<FAKE_PROB)
-    _targets = PT(targets=(_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 999).cuda()).long()*__fakes.long())%1000)
+    _targets = PT(targets=(_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 6).cuda()).long()*__fakes.long())
+                           % 7)
     _is_real_label = PT(is_real_label=(_targets == _labels).long())
     _masks, _exists_logits, _ = saliency_p(_images, _targets)
     PT(exists_logits=_exists_logits)
