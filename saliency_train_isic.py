@@ -104,7 +104,7 @@ if __name__ == '__main__':
     if config.load_model is not None:
         saliency.minimialistic_restore(config.load_model)
     saliency_old = saliency
-    saliency = nn.DataParallel(saliency)
+    saliency_p = nn.DataParallel(saliency)
 
     if config.phase == 1:
         nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=128), optim_phase1,
