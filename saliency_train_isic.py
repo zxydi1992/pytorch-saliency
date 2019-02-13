@@ -37,7 +37,7 @@ def black_box_resnet_isic(cuda=True, ckpt_path=None):
     freeze_model(black_box_model)
 
     def black_box_fn(_images):
-        return black_box_model(_images)[0]
+        return black_box_model(_images)[-1]
     return black_box_fn
 
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     if config.load_model is not None:
         saliency.minimialistic_restore(config.load_model)
     saliency_old = saliency
-    saliency_p = nn.DataParallel(saliency)
+    # saliency_p = nn.DataParallel(saliency)
 
     if config.phase == 1:
         nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=128), optim_phase1,
