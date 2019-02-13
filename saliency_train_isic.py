@@ -27,12 +27,12 @@ def freeze_model(model):
 def black_box_resnet_isic(cuda=True, ckpt_path=None):
     black_box_model = resnet50encoder()
 
-    if cuda:
-        black_box_model = torch.nn.DataParallel(black_box_model).cuda()
     if ckpt_path is not None:
         black_box_model.load_state_dict(
             (torch.load(ckpt_path, map_location=lambda storage, loc: storage)['state_dict'])
         )
+    if cuda:
+        black_box_model = torch.nn.DataParallel(black_box_model).cuda()
     black_box_model.train(False)
     freeze_model(black_box_model)
 
