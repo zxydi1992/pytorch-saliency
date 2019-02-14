@@ -37,7 +37,7 @@ def black_box_resnet_isic(cuda=True, ckpt_path=None):
     freeze_model(black_box_model)
 
     def black_box_fn(_images):
-        return black_box_model(_images)[-1]
+        return black_box_model((1 + _images) * 0.5)[-1]
     return black_box_fn
 
 
@@ -72,7 +72,7 @@ def ev_phase1(_images, _labels):
     __fakes = Variable(torch.Tensor(_images.size(0)).uniform_(0, 1).cuda()<FAKE_PROB)
     _targets = (_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 6).cuda()).long()*__fakes.long()) % 7
     _is_real_label = PT(is_real_label=(_targets == _labels).long())
-    _masks, _exists_logits, _ = saliency_p(_images, _targets)
+    _masks, _exists_logits, _ = saliency_p(2.0 * _images - 1.0, _targets)
     PT(exists_logits=_exists_logits)
     exists_loss = F.cross_entropy(_exists_logits, _is_real_label)
     loss = PT(loss=exists_loss)
@@ -84,9 +84,9 @@ def ev_phase2(_images, _labels):
     _targets = PT(targets=(_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 6).cuda()).long()*__fakes.long())
                            % 7)
     _is_real_label = PT(is_real_label=(_targets == _labels).long())
-    _masks, _exists_logits, _ = saliency_p(_images, _targets)
+    _masks, _exists_logits, _ = saliency_p(2.0 * _images - 1.0, _targets)
     PT(exists_logits=_exists_logits)
-    saliency_loss = saliency_loss_calc.get_loss(_images, _labels, _masks, _is_real_target=_is_real_label,  pt_store=PT)
+    saliency_loss = saliency_loss_calc.get_loss(2.0 * _images - 1.0, _labels, _masks, _is_real_target=_is_real_label,  pt_store=PT)
     loss = PT(loss=saliency_loss)
 
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
                          events=[lr_step_phase1,],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
         FAKE_PROB = .5
-        nt_phase1.train(1700)
+        nt_phase1.train(3400)
     else:
         nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64), optim_phase2,
                          val_dts=dts.get_loader(val_dts, batch_size=64),
@@ -123,7 +123,7 @@ if __name__ == '__main__':
                          events=[],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
         FAKE_PROB = .3
-        nt_phase2.train(600)
+        nt_phase2.train(1200)
 
     saliency_old.cpu()
     saliency_old.minimalistic_save(config.save_dir)  # later to restore just use saliency.minimalistic_restore methdod.
