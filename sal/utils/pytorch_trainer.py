@@ -42,8 +42,9 @@ def sample_from_loader(loader, count):
     remains = count
     while remains > 0:
         for batch in loader:
-            yield batch
-        remains -= 1
+            if remains > 0:
+                yield batch
+            remains -= 1
 
 
 class NiceTrainer:

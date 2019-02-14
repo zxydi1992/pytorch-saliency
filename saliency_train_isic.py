@@ -1,5 +1,7 @@
 import argparse
 import torch
+from torch.utils.data.sampler import WeightedRandomSampler
+
 from sal.utils.pytorch_fixes import *
 from sal.utils.pytorch_trainer import *
 from sal.saliency_model import SaliencyModel, SaliencyLoss
@@ -75,9 +77,27 @@ optim_phase1 = torch_optim.Adam(saliency.selector_module.parameters(), 0.001, we
 optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weight_decay=0.0001)
 
 
-def set_trainable(is_training):
+def set_trainable_phase1(is_training):
     saliency.train(is_training)
-    # encoder.train(False)
+
+
+def set_trainable_phase2(is_training):
+    saliency.train(is_training)
+    encoder.train(False)
+
+
+def make_weights_for_balanced_classes(labels, nclasses):
+    count = [0] * nclasses
+    for label in labels:
+        count[label] += 1
+    weight_per_class = [0.] * nclasses
+    N = float(sum(count))
+    for i in range(nclasses):
+        weight_per_class[i] = N/float(count[i])
+    weight = [0] * len(labels)
+    for idx, val in enumerate(labels):
+        weight[idx] = weight_per_class[val[1]]
+    return weight
 
 
 @TrainStepEvent()
@@ -126,26 +146,30 @@ if __name__ == '__main__':
     if config.load_model is not None:
         saliency.minimialistic_restore(config.load_model)
     saliency_old = saliency
-    # saliency_p = nn.DataParallel(saliency)
+    weights = make_weights_for_balanced_classes(train_dts.labels, 7)
+    weights = torch.DoubleTensor(weights)
+    sampler = WeightedRandomSampler(weights, len(weights))
 
     if config.phase == 1:
         nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=96), optim_phase1,
-                         val_dts=dts.get_loader(val_dts, batch_size=96),
+                         val_dts=dts.get_loader(val_dts, batch_size=96, sampler=sampler),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[lr_step_phase1,],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')},
-                         set_trainable=set_trainable)
+                         set_trainable=set_trainable_phase1)
         FAKE_PROB = .5
         nt_phase1.train(8500)
     else:
+        saliency.fix_encoder = True
+        freeze_model(encoder)
         nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=48), optim_phase2,
-                         val_dts=dts.get_loader(val_dts, batch_size=48),
+                         val_dts=dts.get_loader(val_dts, batch_size=48, sampler=sampler),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')},
-                         set_trainable=set_trainable)
+                         set_trainable=set_trainable_phase2)
         FAKE_PROB = .3
         nt_phase2.train(3000)
 
