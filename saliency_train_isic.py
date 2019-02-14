@@ -55,7 +55,7 @@ def black_box_resnet_isic(cuda=True, ckpt_path=None):
     freeze_model(black_box_model)
 
     def black_box_fn(_images):
-        return black_box_model((1 + _images) * 0.5)[-1]
+        return black_box_model(_images)[-1]
     return black_box_fn
 
 
@@ -63,12 +63,11 @@ train_dts = dts.get_train_dataset()
 val_dts = dts.get_val_dataset()
 
 encoder = resnet50encoder(7, pretrained=True)
-# encoder.load_state_dict(torch.load(ISIC_RESNET50_CKPT_PATH)['state_dict'])
-# for param in encoder.parameters():
-#    param.requires_grad = False
+encoder.train(False)
+freeze_model(encoder)
 
 # Default saliency model with pretrained resnet50 feature extractor, produces saliency maps which have resolution 4 times lower than the input image.
-saliency = SaliencyModel(encoder, 5, 64, 3, 64, fix_encoder=False, use_simple_activation=False, allow_selector=True, num_classes=7)
+saliency = SaliencyModel(encoder, 5, 64, 3, 64, fix_encoder=True, use_simple_activation=False, allow_selector=True, num_classes=7)
 
 saliency_p = saliency.cuda()
 saliency_loss_calc = SaliencyLoss(black_box_resnet_isic(ckpt_path=ISIC_RESNET50_CKPT_PATH),
@@ -79,6 +78,7 @@ optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weig
 
 def set_trainable_phase1(is_training):
     saliency.train(is_training)
+    encoder.train(False)
 
 
 def set_trainable_phase2(is_training):
@@ -101,7 +101,7 @@ def make_weights_for_balanced_classes(labels, nclasses):
 
 
 @TrainStepEvent()
-@EveryNthEvent(4000)
+@EveryNthEvent(2000)
 def lr_step_phase1(s):
     print()
     print(GREEN_STR % 'Reducing lr by a factor of 10')
@@ -151,29 +151,27 @@ if __name__ == '__main__':
     sampler = WeightedRandomSampler(weights, len(weights))
 
     if config.phase == 1:
-        nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=96, sampler=sampler, shuffle=False),
+        nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=128, sampler=sampler, shuffle=False),
                                 optim_phase1,
-                         val_dts=dts.get_loader(val_dts, batch_size=96),
+                         val_dts=dts.get_loader(val_dts, batch_size=128),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[lr_step_phase1,],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')},
                          set_trainable=set_trainable_phase1)
         FAKE_PROB = .5
-        nt_phase1.train(8500)
+        nt_phase1.train(5100)
     else:
-        saliency.fix_encoder = True
-        freeze_model(encoder)
-        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=48, sampler=sampler,
+        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=64, sampler=sampler,
                                                           shuffle=False), optim_phase2,
-                         val_dts=dts.get_loader(val_dts, batch_size=48),
+                         val_dts=dts.get_loader(val_dts, batch_size=64),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[],
                          computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')},
                          set_trainable=set_trainable_phase2)
         FAKE_PROB = .3
-        nt_phase2.train(3000)
+        nt_phase2.train(2400)
 
     saliency_old.cpu()
     saliency_old.minimalistic_save(config.save_dir)  # later to restore just use saliency.minimalistic_restore methdod.
