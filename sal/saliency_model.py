@@ -78,8 +78,8 @@ class SaliencyModel(Module):
         assert self.fix_encoder, 'You should not use this function if you are not using a pre-trained encoder like resnet'
         data = {}
         for name, module in list(self._modules.items()):
-            if module is self.encoder:  # we do not want to restore the encoder as it should have its own restore function
-                continue
+            # if module is self.encoder:  # we do not want to restore the encoder as it should have its own restore function
+            #     continue
             data[name] = module.state_dict()
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
