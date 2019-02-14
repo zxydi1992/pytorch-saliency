@@ -44,8 +44,8 @@ def black_box_resnet_isic(cuda=True, ckpt_path=None):
 train_dts = dts.get_train_dataset()
 val_dts = dts.get_val_dataset()
 
-encoder = resnet50encoder(7)
-encoder.load_state_dict(torch.load(ISIC_RESNET50_CKPT_PATH)['state_dict'])
+encoder = resnet50encoder(7, pretrained=True)
+# encoder.load_state_dict(torch.load(ISIC_RESNET50_CKPT_PATH)['state_dict'])
 for param in encoder.parameters():
     param.requires_grad = False
 

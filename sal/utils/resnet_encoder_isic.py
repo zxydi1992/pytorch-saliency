@@ -25,7 +25,7 @@ class ResNetEncoder(ResNet):
         return s0, s1, s2, s3, s4, s5, sX, sC
 
 
-def resnet50encoder(num_classes=7, **kwargs):
+def resnet50encoder(num_classes=7, pretrained=False, **kwargs):
     """Constructs a ResNet-50 encoder that returns all the intermediate feature maps.
     For resnet50 the returned feature maps (for example batch size 5) are:
     (5L, 3L, 224L, 224L)
@@ -41,6 +41,9 @@ def resnet50encoder(num_classes=7, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
     model = ResNetEncoder(Bottleneck, [3, 4, 6, 3], **kwargs)
+    if pretrained:
+        model.load_state_dict(model_zoo.load_url('https://download.pytorch.org/models/resnet50-19c8e357.pth'))
+
     model.last_linear = nn.Linear(model.fc.in_features, num_classes)
     model.fc = None
     return model
