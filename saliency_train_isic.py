@@ -74,6 +74,12 @@ saliency_loss_calc = SaliencyLoss(black_box_resnet_isic(ckpt_path=ISIC_RESNET50_
 optim_phase1 = torch_optim.Adam(saliency.selector_module.parameters(), 0.001, weight_decay=0.0001)
 optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weight_decay=0.0001)
 
+
+def set_trainable(is_training):
+    saliency.train(is_training)
+    encoder.train(False)
+
+
 @TrainStepEvent()
 @EveryNthEvent(4000)
 def lr_step_phase1(s):
@@ -128,7 +134,8 @@ if __name__ == '__main__':
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[lr_step_phase1,],
-                         computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
+                         computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')},
+                         set_trainable=set_trainable)
         FAKE_PROB = .5
         nt_phase1.train(8500)
     else:
@@ -137,7 +144,8 @@ if __name__ == '__main__':
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[],
-                         computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')})
+                         computed_variables={'exists_accuracy': accuracy_calc_op('exists_logits', 'is_real_label')},
+                         set_trainable=set_trainable)
         FAKE_PROB = .3
         nt_phase2.train(3000)
 

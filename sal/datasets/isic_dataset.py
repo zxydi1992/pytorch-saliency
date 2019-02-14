@@ -68,9 +68,10 @@ def get_val_dataset(size=224):
     return ISICDataset(ISIC_IMAGES_DIR, None, indices, transforms=get_isic_val_transform())
 
 
-def get_loader(dataset, batch_size=64, pin_memory=True):
+def get_loader(dataset, batch_size=64, pin_memory=True, sampler=None):
     return DataLoader(dataset=dataset, batch_size=batch_size,
-                      shuffle=True, drop_last=True, num_workers=4, pin_memory=pin_memory)
+                      shuffle=True, drop_last=True, num_workers=4, pin_memory=pin_memory,
+                      sampler=sampler)
 
 
 class ISICDataset(Dataset):
