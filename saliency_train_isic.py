@@ -62,11 +62,11 @@ val_dts = dts.get_val_dataset()
 
 encoder = resnet50encoder(7, pretrained=True)
 # encoder.load_state_dict(torch.load(ISIC_RESNET50_CKPT_PATH)['state_dict'])
-for param in encoder.parameters():
-    param.requires_grad = False
+# for param in encoder.parameters():
+#    param.requires_grad = False
 
 # Default saliency model with pretrained resnet50 feature extractor, produces saliency maps which have resolution 4 times lower than the input image.
-saliency = SaliencyModel(encoder, 5, 64, 3, 64, fix_encoder=True, use_simple_activation=False, allow_selector=True, num_classes=7)
+saliency = SaliencyModel(encoder, 5, 64, 3, 64, fix_encoder=False, use_simple_activation=False, allow_selector=True, num_classes=7)
 
 saliency_p = saliency.cuda()
 saliency_loss_calc = SaliencyLoss(black_box_resnet_isic(ckpt_path=ISIC_RESNET50_CKPT_PATH),
@@ -77,7 +77,7 @@ optim_phase2 = torch_optim.Adam(saliency.get_trainable_parameters(), 0.001, weig
 
 def set_trainable(is_training):
     saliency.train(is_training)
-    encoder.train(False)
+    # encoder.train(False)
 
 
 @TrainStepEvent()
