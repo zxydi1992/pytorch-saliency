@@ -151,8 +151,9 @@ if __name__ == '__main__':
     sampler = WeightedRandomSampler(weights, len(weights))
 
     if config.phase == 1:
-        nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=96), optim_phase1,
-                         val_dts=dts.get_loader(val_dts, batch_size=96, sampler=sampler),
+        nt_phase1 = NiceTrainer(ev_phase1, dts.get_loader(train_dts, batch_size=96, sampler=sampler, shuffle=False),
+                                optim_phase1,
+                         val_dts=dts.get_loader(val_dts, batch_size=96),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[lr_step_phase1,],
@@ -163,8 +164,9 @@ if __name__ == '__main__':
     else:
         saliency.fix_encoder = True
         freeze_model(encoder)
-        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=48), optim_phase2,
-                         val_dts=dts.get_loader(val_dts, batch_size=48, sampler=sampler),
+        nt_phase2 = NiceTrainer(ev_phase2, dts.get_loader(train_dts, batch_size=48, sampler=sampler,
+                                                          shuffle=False), optim_phase2,
+                         val_dts=dts.get_loader(val_dts, batch_size=48),
                          modules=[saliency],
                          printable_vars=['loss', 'exists_accuracy'],
                          events=[],
