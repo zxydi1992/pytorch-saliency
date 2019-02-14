@@ -19,6 +19,22 @@ dts = isic_dataset
 # ----------------
 
 
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
+
+
+def imagenet_normalize(t, mean=None, std=None):
+    if mean is None:
+        mean = IMAGENET_MEAN
+    if std is None:
+        std= IMAGENET_STD
+
+    ts = []
+    for i in range(3):
+        ts.append(torch.unsqueeze((t[:, i] - mean[i]) / std[i], 1))
+    return torch.cat(ts, dim=1)
+
+
 def freeze_model(model):
     for param in model.parameters():
         param.requires_grad_(False)
@@ -72,7 +88,7 @@ def ev_phase1(_images, _labels):
     __fakes = Variable(torch.Tensor(_images.size(0)).uniform_(0, 1).cuda()<FAKE_PROB)
     _targets = (_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 6).cuda()).long()*__fakes.long()) % 7
     _is_real_label = PT(is_real_label=(_targets == _labels).long())
-    _masks, _exists_logits, _ = saliency_p(2.0 * _images - 1.0, _targets)
+    _masks, _exists_logits, _ = saliency_p(imagenet_normalize(_images), _targets)
     PT(exists_logits=_exists_logits)
     exists_loss = F.cross_entropy(_exists_logits, _is_real_label)
     loss = PT(loss=exists_loss)
@@ -84,9 +100,9 @@ def ev_phase2(_images, _labels):
     _targets = PT(targets=(_labels + Variable(torch.Tensor(_images.size(0)).uniform_(1, 6).cuda()).long()*__fakes.long())
                            % 7)
     _is_real_label = PT(is_real_label=(_targets == _labels).long())
-    _masks, _exists_logits, _ = saliency_p(2.0 * _images - 1.0, _targets)
+    _masks, _exists_logits, _ = saliency_p(imagenet_normalize(_images), _targets)
     PT(exists_logits=_exists_logits)
-    saliency_loss = saliency_loss_calc.get_loss(2.0 * _images - 1.0, _labels, _masks, _is_real_target=_is_real_label,  pt_store=PT)
+    saliency_loss = saliency_loss_calc.get_loss(_images, _labels, _masks, _is_real_target=_is_real_label,  pt_store=PT)
     loss = PT(loss=saliency_loss)
 
 
